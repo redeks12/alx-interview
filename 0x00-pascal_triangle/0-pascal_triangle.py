@@ -13,6 +13,8 @@ def pascal_triangle(n):
     tri = [[1], [1, 1]]
     if n <= 0:
         return []
+    if n == 1:
+        return [[1]]
 
     for i in range(2, n):
         tri.append([1])
