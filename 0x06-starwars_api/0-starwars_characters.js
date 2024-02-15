@@ -1,18 +1,27 @@
 #!/usr/bin/node
-import request from "request";
-import { promisify } from "util";
-const url = `https://swapi-api.alx-tools.com/api/films/${process.argv[2]}`;
-const asyncRequest = promisify(request);
+const request = require("request");
+const API_URL = "https://swapi-api.hbtn.io/api";
 
-async function print_characters(urls) {
-  for (const urlt of urls) {
-    const val = await asyncRequest({ url: urlt, json: true });
-    console.log(val.body.name);
-  }
-}
+if (process.argv.length > 2) {
+  request(`${API_URL}/films/${process.argv[2]}/`, (err, _, body) => {
+    if (err) {
+      console.log(err);
+    }
+    const charactersURL = JSON.parse(body).characters;
+    const charactersName = charactersURL.map(
+      (url) =>
+        new Promise((resolve, reject) => {
+          request(url, (promiseErr, __, charactersReqBody) => {
+            if (promiseErr) {
+              reject(promiseErr);
+            }
+            resolve(JSON.parse(charactersReqBody).name);
+          });
+        })
+    );
 
-async function get_stuff() {
-  const val = await asyncRequest({ url: url, json: true });
-  await print_characters(val.body.characters);
+    Promise.all(charactersName)
+      .then((names) => console.log(names.join("\n")))
+      .catch((allErr) => console.log(allErr));
+  });
 }
-get_stuff();
