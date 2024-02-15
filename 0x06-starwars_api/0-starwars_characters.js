@@ -1,53 +1,29 @@
 #!/usr/bin/node
-
-const request = require("request");
+import request from "request";
+import { promisify } from "util";
 const movieId = process.argv[2];
 if (!movieId || isNaN(movieId)) {
   console.error("Usage: ./0-starwars_characters.js <movie_id>");
   process.exit(1);
 }
+const url = `https://swapi-api.alx-tools.com/api/films/${movieId}`;
+const asyncRequest = promisify(request);
 
-const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
+async function print_characters(urls) {
+  for (const urlt of urls) {
+    const val = await asyncRequest({ url: urlt, json: true });
 
-request(apiUrl, (error, response, body) => {
-  if (error) {
-    console.error("Error:", error);
-    process.exit(1);
+    console.log(val.body.name);
+  }
+}
+
+async function get_stuff() {
+  const val = await asyncRequest({ url: url, json: true });
+  if (val.statusCode === 200) {
+    await print_characters(val.body.characters);
   }
 
-  if (response.statusCode !== 200) {
-    console.error("Invalid response:", response.statusCode);
-    process.exit(1);
-  }
-
-  const filmData = JSON.parse(body);
-
-  if (!filmData.characters || filmData.characters.length === 0) {
-    console.error("No characters found for this movie.");
-    process.exit(1);
-  }
-
-  const charactersUrls = filmData.characters;
-  const charactersPromises = charactersUrls.map((characterUrl) => {
-    return new Promise((resolve, reject) => {
-      request(characterUrl, (error, response, body) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(JSON.parse(body).name);
-        }
-      });
-    });
-  });
-
-  Promise.all(charactersPromises)
-    .then((characterNames) => {
-      characterNames.forEach((name) => {
-        console.log(name);
-      });
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      process.exit(1);
-    });
-});
+  console.error("Invalid response:", val.statusCode);
+  process.exit(1);
+}
+get_stuff();
