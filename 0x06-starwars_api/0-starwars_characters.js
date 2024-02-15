@@ -1,18 +1,53 @@
 #!/usr/bin/node
-import request from "request";
-import { promisify } from "util";
-const url = `https://swapi-api.alx-tools.com/api/films/${process.argv[2]}`;
-const asyncRequest = promisify(request);
 
-async function print_characters(urls) {
-  for (const urlt of urls) {
-    const val = await asyncRequest({ url: urlt, json: true });
-    console.log(val.body.name);
+const request = require("request");
+const movieId = process.argv[2];
+if (!movieId || isNaN(movieId)) {
+  console.error("Usage: ./0-starwars_characters.js <movie_id>");
+  process.exit(1);
+}
+
+const apiUrl = `https://swapi.dev/api/films/${movieId}/`;
+
+request(apiUrl, (error, response, body) => {
+  if (error) {
+    console.error("Error:", error);
+    process.exit(1);
   }
-}
 
-async function get_stuff() {
-  const val = await asyncRequest({ url: url, json: true });
-  await print_characters(val.body.characters);
-}
-get_stuff();
+  if (response.statusCode !== 200) {
+    console.error("Invalid response:", response.statusCode);
+    process.exit(1);
+  }
+
+  const filmData = JSON.parse(body);
+
+  if (!filmData.characters || filmData.characters.length === 0) {
+    console.error("No characters found for this movie.");
+    process.exit(1);
+  }
+
+  const charactersUrls = filmData.characters;
+  const charactersPromises = charactersUrls.map((characterUrl) => {
+    return new Promise((resolve, reject) => {
+      request(characterUrl, (error, response, body) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(JSON.parse(body).name);
+        }
+      });
+    });
+  });
+
+  Promise.all(charactersPromises)
+    .then((characterNames) => {
+      characterNames.forEach((name) => {
+        console.log(name);
+      });
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      process.exit(1);
+    });
+});
