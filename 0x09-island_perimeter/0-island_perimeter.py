@@ -18,13 +18,13 @@ def island_perimeter(grid):
                     if not ind - 1 < 0:
                         count += 1
                 if cell[ind + 1] == 0:
-                    if not len(cell) - 1 < ind + 1:
+                    if not len(cell) < ind + 1:
                         count += 1
                 if grid[index - 1][ind] == 0:
                     if not index - 1 < 0:
                         count += 1
                 if grid[index + 1][ind] == 0:
-                    if not len(grid) - 1 < index + 1:
+                    if not len(grid) < index + 1:
                         count += 1
 
     return count
