@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 """0x09. Island Perimeter"""
-# from typing import List
 
 
-def island_perimeter(grid: list[list[int]]):
+def island_perimeter(grid: list[list[int]]) -> int:
     """island_perimeter function"""
     count = 0
     for index, cell in enumerate(grid):
